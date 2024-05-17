@@ -17,6 +17,7 @@
 #endif
 
 static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
+	csp_print("UDP tx\n");
 
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
@@ -45,7 +46,7 @@ int csp_if_udp_rx_work(int sockfd, size_t unused, csp_iface_t * iface) {
 	/* Setup RX frane to point to ID */
 	int header_size = csp_id_setup_rx(packet);
 	int received_len = recvfrom(sockfd, (char *)packet->frame_begin, sizeof(packet->data) + header_size, MSG_WAITALL, NULL, NULL);
-	
+
 	if (received_len <= 4) {
 		csp_buffer_free(packet);
 		return CSP_ERR_NOMEM;
