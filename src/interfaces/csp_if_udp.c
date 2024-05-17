@@ -16,9 +16,9 @@
 #define MSG_CONFIRM (0)
 #endif
 
-static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
-	csp_print("UDP tx\n");
+#define SEC_CHALLENGE_UDP_TC_WIRETAPPING 1
 
+static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
 
 	if (ifconf->sockfd == 0) {
@@ -29,6 +29,21 @@ static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packe
 
 	csp_id_prepend(packet);
 	ifconf->peer_addr.sin_family = AF_INET;
+
+#if SEC_CHALLENGE_UDP_TC_WIRETAPPING == 1
+	char*ip = inet_ntoa(ifconf->peer_addr.sin_addr);
+	csp_print("UDP tx to %s:%d\n", ip, ifconf->rport);
+	csp_print("raw 0x[");
+	for(size_t idx = 0; idx < packet->frame_length; idx++) {
+		if(idx == (size_t) packet->frame_length - 1) {
+			csp_print("%02x", packet->frame_begin[idx]);
+			continue;
+		}
+		csp_print("%02x, ", packet->frame_begin[idx]);
+	}
+	csp_print("]\n");
+#endif
+
 	ifconf->peer_addr.sin_port = htons(ifconf->rport);
 	sendto(ifconf->sockfd, packet->frame_begin, packet->frame_length, MSG_CONFIRM, (struct sockaddr *)&ifconf->peer_addr, sizeof(ifconf->peer_addr));
 	csp_buffer_free(packet);
