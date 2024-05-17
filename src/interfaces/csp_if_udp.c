@@ -16,7 +16,8 @@
 #define MSG_CONFIRM (0)
 #endif
 
-#define SEC_CHALLENGE_UDP_TC_WIRETAPPING 1
+#define SEC_CHALLENGE_UDP_TX_WIRETAPPING 1
+#define SEC_CHALLENGE_UDP_RX_WIRETAPPING 1
 
 static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
@@ -30,7 +31,7 @@ static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packe
 	csp_id_prepend(packet);
 	ifconf->peer_addr.sin_family = AF_INET;
 
-#if SEC_CHALLENGE_UDP_TC_WIRETAPPING == 1
+#if SEC_CHALLENGE_UDP_TX_WIRETAPPING == 1
 	char*ip = inet_ntoa(ifconf->peer_addr.sin_addr);
 	csp_print("UDP tx to %s:%d\n", ip, ifconf->rport);
 	csp_print("raw 0x[");
@@ -61,6 +62,10 @@ int csp_if_udp_rx_work(int sockfd, size_t unused, csp_iface_t * iface) {
 	/* Setup RX frane to point to ID */
 	int header_size = csp_id_setup_rx(packet);
 	int received_len = recvfrom(sockfd, (char *)packet->frame_begin, sizeof(packet->data) + header_size, MSG_WAITALL, NULL, NULL);
+
+#if SEC_CHALLENGE_UDP_RX_WIRETAPPING == 1
+	csp_print("UDP rx\n");
+#endif
 
 	if (received_len <= 4) {
 		csp_buffer_free(packet);
