@@ -16,8 +16,8 @@
 #define MSG_CONFIRM (0)
 #endif
 
-#define SEC_CHALLENGE_UDP_TX_WIRETAPPING 1
-#define SEC_CHALLENGE_UDP_RX_WIRETAPPING 1
+#define SEC_CHALLENGE_UDP_TX_WIRETAPPING 0
+#define SEC_CHALLENGE_UDP_RX_WIRETAPPING 0
 
 static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packet, int from_me) {
 	csp_if_udp_conf_t * ifconf = iface->driver_data;
@@ -32,11 +32,11 @@ static int csp_if_udp_tx(csp_iface_t * iface, uint16_t via, csp_packet_t * packe
 	ifconf->peer_addr.sin_family = AF_INET;
 
 #if SEC_CHALLENGE_UDP_TX_WIRETAPPING == 1
-	char*ip = inet_ntoa(ifconf->peer_addr.sin_addr);
+	char * ip = inet_ntoa(ifconf->peer_addr.sin_addr);
 	csp_print("UDP tx to %s:%d\n", ip, ifconf->rport);
 	csp_print("raw 0x[");
-	for(size_t idx = 0; idx < packet->frame_length; idx++) {
-		if(idx == (size_t) packet->frame_length - 1) {
+	for (size_t idx = 0; idx < packet->frame_length; idx++) {
+		if (idx == (size_t)packet->frame_length - 1) {
 			csp_print("%02x", packet->frame_begin[idx]);
 			continue;
 		}
